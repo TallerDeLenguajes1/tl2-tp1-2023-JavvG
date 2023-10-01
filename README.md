@@ -32,26 +32,33 @@
 
 - Teniendo en cuenta los principios de abstracción y ocultamiento, los atributos,propiedades y métodos podrían clasificarse de esta forma:
 
-Clase Cliente:
+- Clase Cliente:
+
     - Nombre: público
     - Direccion: público
     - Telefono: público
     - DatosReferenciaDireccion: público
-Clase Pedido:
+
+- Clase Pedido:
+
     - Nro: privado
     - Obs: público
     - Cliente: público
     - Estado: público
     verDireccionCLiente(): público
     verDatosCliente(): público
-Clase Cadete:
+
+- Clase Cadete:
+
     - Id: privado
     - Nombre: público
     - Direccion: privado
     - Telefono: público
     - ListadoPedidos: privado
     jornalACobrar(): público
-Clase Cadetería:
+
+- Clase Cadetería:
+
     - Nombre: privado
     - Telefono: privado
     - ListadoCadetes: privado
