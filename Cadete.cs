@@ -52,7 +52,7 @@ namespace EspacioCadete {
         }
 
         public void EliminarPedido(Pedido pedidoAEliminar) {
-            this.ListadoPedidos.Remove(pedidoAEliminar);
+            this.ListadoPedidos.RemoveAll(pedido => pedido == pedidoAEliminar);
         }
 
     }

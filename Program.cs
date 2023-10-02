@@ -17,20 +17,19 @@ int numeroPedido = 0;
 Console.WriteLine( "\n\n - SISTEMA DE GESTIÓN DE PEDIDOS -");
 
 bool again = true;
+int option = 0;
 
-while(again) {
+while(again && option != 7) {
 
     Console.Clear();
 
-    int option;
-
     Console.WriteLine("\n ¿Qué operación desea realizar?");
 
-    Console.Write("\n\n [1] - Dar de alta un pedido \n [2] - Asignar un pedido a un cadete \n [3] - Cambiar estado de un pedido \n [4] - Reasignar un pedido a otro cadete \n [5] - Listar todos los cadetes \n [6] - Salir \n\n >> Su elección: " );
+    Console.Write("\n\n [1] - Dar de alta un pedido \n [2] - Asignar un pedido a un cadete \n [3] - Cambiar estado de un pedido \n [4] - Reasignar un pedido a otro cadete \n [5] - Listar todos los cadetes \n [6] - Generar informe \n [7] - Salir \n\n >> Su elección: " );
 
     string? input = Console.ReadLine();
 
-    while(!int.TryParse(input, out option) || option < 1 || option > 6) {
+    while(!int.TryParse(input, out option) || option < 1 || option > 7) {
         Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
         input = Console.ReadLine();
     }
@@ -61,6 +60,11 @@ while(again) {
         case 5:
             Console.Clear();
             cadeteria.ListarTodosLosCadetes();
+        break;
+
+        case 6:
+            Console.Clear();
+            cadeteria.GenerarInforme();
         break;
         
     }

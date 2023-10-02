@@ -10,17 +10,27 @@ namespace EspacioCadeteria {
         private int telefono;
         private List<Cadete> listadoCadetes;
         private List<Pedido> listadoTotalPedidos;
+        private List<Pedido> listaPedidosPendientes;
+        private List<Pedido> listaPedidosEntregados;
+        private List<Pedido> listaPedidosCancelados;
+
 
         public string Nombre { get => nombre; set => nombre = value; }
         public int Telefono { get => telefono; set => telefono = value; }
         public List<Cadete> ListadoCadetes { get => listadoCadetes; set => listadoCadetes = value; }
         public List<Pedido> ListadoTotalPedidos { get => listadoTotalPedidos; set => listadoTotalPedidos = value; }
+        public List<Pedido> ListaPedidosPendientes { get => listaPedidosPendientes; set => listaPedidosPendientes = value; }
+        public List<Pedido> ListaPedidosEntregados { get => listaPedidosEntregados; set => listaPedidosEntregados = value; }
+        public List<Pedido> ListaPedidosCancelados { get => listaPedidosCancelados; set => listaPedidosCancelados = value; }
 
         // Métodos
 
         public Cadeteria() {    // Constructor por defecto, inicializa una lista de cadetes para evitar errores a posteriori
-            this.listadoCadetes = new List<Cadete>();
-            this.listadoTotalPedidos = new List<Pedido>();
+            this.ListadoCadetes = new List<Cadete>();
+            this.ListadoTotalPedidos = new List<Pedido>();
+            this.ListaPedidosEntregados = new List<Pedido>();
+            this.ListaPedidosPendientes = new List<Pedido>();
+            this.ListaPedidosCancelados = new List<Pedido>();
         }
 
         public void CargarDatosCadeteria() {
@@ -135,8 +145,18 @@ namespace EspacioCadeteria {
                 input = Console.ReadLine();
             }
 
+            Console.Write("\n - Monto del pedido: $");
+            input = Console.ReadLine();
+            double montoPedido;
+
+            while(!double.TryParse(input, out montoPedido)) {
+                Console.Write("\n (!) Ingrese un valor válido: ");
+                input = Console.ReadLine();
+            }
+
             nuevoPedido.Numero = numeroPedido;
             nuevoPedido.Observaciones = observacion;
+            nuevoPedido.Monto = montoPedido;
             
             Cliente nuevoCliente = new Cliente();       // Nueva intancia para cliente
 
@@ -147,6 +167,7 @@ namespace EspacioCadeteria {
             nuevoPedido.Cliente = nuevoCliente;
 
             this.listadoTotalPedidos.Add(nuevoPedido);
+            this.ListaPedidosPendientes.Add(nuevoPedido);
 
             Console.WriteLine("\n\n >> El pedido ha sido creado exitosamente. \n");
         }
@@ -236,10 +257,16 @@ namespace EspacioCadeteria {
                     input = Console.ReadLine();
                 }
 
+                this.ListaPedidosEntregados.RemoveAll(pedido => pedido == pedidoAModificar);
+                this.ListaPedidosPendientes.RemoveAll(pedido => pedido == pedidoAModificar);
+                this.ListaPedidosCancelados.RemoveAll(pedido => pedido == pedidoAModificar);
+
+
                 switch(option) {
 
                     case 1:
                         pedidoAModificar.Estado = EstadoPedido.Pendiente;
+                        this.ListaPedidosPendientes.Add(pedidoAModificar);
                     break;
 
                     case 2:
@@ -256,10 +283,12 @@ namespace EspacioCadeteria {
                     
                     case 5:
                         pedidoAModificar.Estado = EstadoPedido.Entregado;
+                        this.ListaPedidosEntregados.Add(pedidoAModificar);
                     break;
 
                     case 6:
                         pedidoAModificar.Estado = EstadoPedido.Cancelado;
+                        this.ListaPedidosCancelados.Add(pedidoAModificar);
                     break;
 
                 }
@@ -366,7 +395,7 @@ namespace EspacioCadeteria {
                     Pedido? pedidoAEliminar = C.ListadoPedidos.Find(pedido => pedido == pedidoAReasignar);
 
                     if(pedidoAEliminar != null) {       // Si el pedido a reasignar se encuentra en alguna de las listas de pedidos de algun cadete, se elimina
-                        C.ListadoPedidos.Remove(pedidoAEliminar);
+                        C.EliminarPedido(pedidoAEliminar);
                     }
 
                 }
@@ -434,7 +463,38 @@ namespace EspacioCadeteria {
             return this.ListadoTotalPedidos.Count();
         }
 
+        public double RecaudacionTotal() {
+
+            double recaudacion = 0;
+
+            foreach(Pedido P in this.ListadoTotalPedidos) {
+                recaudacion += P.Monto;
+            }
+
+            return recaudacion;
+        }
+
+        public void VerMontosCadaPedido() {
+            foreach(Pedido P in this.ListadoTotalPedidos) {
+                Console.WriteLine($"\n PEDIDO NÚMERO: {P.Numero}");
+                Console.WriteLine($" - Monto: ${P.Monto}");
+            }
+        }
+
+        
+
+        public void GenerarInforme() {
+
+            var pedidosEntregados = from pedido in this.ListadoTotalPedidos where pedido.Estado == EstadoPedido.Entregado select pedido;
+
+            Console.WriteLine("\n------ INFORME ------\n\n");
+            Console.WriteLine($" Pedidos pendientes: {this.ListaPedidosPendientes.Count()} ");
+            Console.WriteLine($" Pedidos entregados: {this.ListaPedidosEntregados.Count()}"); 
+            Console.WriteLine($" Pedidos totales: {this.ListadoTotalPedidos.Count()}");
+            Console.WriteLine($" ------------------\n Recaudación total: ${this.RecaudacionTotal()}");
+
+        }
+
     }
     
 }
-
