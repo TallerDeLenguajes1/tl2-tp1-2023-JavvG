@@ -18,14 +18,13 @@
     generarInforme()
     cantidadCadetes()
     cantidadPedidos()
-    recaudacionTotal().
 
 - Métodos de la clase Cadete: 
     jornalACobrar()
     cantidadPedidos()
     verDatosCadete()
     agregarPedido()
-    eliminarPedido().
+    eliminarPedido()
 
 
 ## Pregunta 3

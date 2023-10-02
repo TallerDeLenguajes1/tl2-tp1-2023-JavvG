@@ -1,0 +1,440 @@
+using EspacioCadete;
+using EspacioPedido;
+using EspacioCliente;
+
+namespace EspacioCadeteria {
+
+    public class Cadeteria {
+
+        private string nombre;
+        private int telefono;
+        private List<Cadete> listadoCadetes;
+        private List<Pedido> listadoTotalPedidos;
+
+        public string Nombre { get => nombre; set => nombre = value; }
+        public int Telefono { get => telefono; set => telefono = value; }
+        public List<Cadete> ListadoCadetes { get => listadoCadetes; set => listadoCadetes = value; }
+        public List<Pedido> ListadoTotalPedidos { get => listadoTotalPedidos; set => listadoTotalPedidos = value; }
+
+        // Métodos
+
+        public Cadeteria() {    // Constructor por defecto, inicializa una lista de cadetes para evitar errores a posteriori
+            this.listadoCadetes = new List<Cadete>();
+            this.listadoTotalPedidos = new List<Pedido>();
+        }
+
+        public void CargarDatosCadeteria() {
+
+            string currentDirecory = Directory.GetCurrentDirectory();       // Obtiene el directorio actual
+            string dataPath = currentDirecory + @"\cadeteria.csv";      // Dirección en la que se encuentra el archivo buscado
+
+            if(File.Exists(dataPath)) {     // Si el archivo existe, ejecutar lo siguiente
+
+                using (var reader = new StreamReader(dataPath)) {
+
+                    while(!reader.EndOfStream) {        // Mientras no acabe la lectura del archivo
+
+                        string? line = reader.ReadLine();       // Se lee una línea de archivo
+
+                        if(line != null) {      // Si la línea leída no está vacía, ejecutar lo siguiente
+
+                            var splits = line.Split(',');       // Separa las línea leída en el caracter ','
+
+                            this.Nombre = splits[0].Trim();        // El primer split corresponde al nombre (Trim() remueve los espacios en blanco)
+                            this.Telefono = int.Parse(splits[1].Trim());       // El segundo split corresponde al teléfono, haciendo la conversión a entero
+
+                        }
+                    }
+                }
+
+                //Console.WriteLine("\n Datos de cadetería leídos correctamente");
+            }
+            else {
+                Console.WriteLine("\n\n (!) No ha podido encontrarse el archivo de datos de cadetería (cadeteria.csv)");
+            }
+
+        }
+
+        public void CargarDatosCadetes() {
+
+            string currentDirectory = Directory.GetCurrentDirectory();
+            string dataPath = currentDirectory + @"\cadetes.csv";
+
+            if(File.Exists(dataPath)) {
+
+                using (var reader = new StreamReader(dataPath)) {
+
+                    while(!reader.EndOfStream) {
+
+                        string? line = reader.ReadLine();
+
+                        if(line != null) {
+
+                            var splits = line.Split(',');
+
+                            Cadete cadete = new Cadete();       // Nueva instancia para crear un cadete
+
+                            cadete.IdCadete = int.Parse(splits[0].Trim());
+                            cadete.Nombre = splits[1].Trim();
+                            cadete.Direccion = splits[2].Trim();
+                            cadete.Telefono = long.Parse(splits[3].Trim());
+
+                            this.ListadoCadetes.Add(cadete);        // Se añade el nuevo cadete registrado a la lista
+
+                        }
+
+                    }
+
+                }
+
+                //Console.WriteLine("\n Datos de los cadetes leídos correctamente");
+
+            }
+            else {
+                Console.WriteLine("\n\n (!) No ha podido encontrarse el archivo de datos de cadetes (cadetes.csv)");
+            }
+
+        }
+
+        public void CrearPedido(int numeroPedido) {
+
+            Pedido nuevoPedido = new Pedido();      // Nueva instancia para el pedido
+
+            Console.WriteLine("\n - NUEVO PEDIDO -");
+
+            Console.Write("\n - Descripción del pedido: ");
+            var observacion = Console.ReadLine();
+
+            while(string.IsNullOrEmpty(observacion)) {
+                Console.Write("\n - (!) Ingrese una descripción válida: ");
+                observacion = Console.ReadLine();
+            }
+
+            Console.Write("\n - Nombre del cliente: ");
+            var nombreCliente = Console.ReadLine();
+
+            while(string.IsNullOrEmpty(nombreCliente)) {
+                Console.Write("\n (!) Ingrese un nombre válido: ");
+                nombreCliente = Console.ReadLine();
+            }
+
+            Console.Write("\n - Dirección del cliente: ");
+            var direccionCliente = Console.ReadLine();
+
+            while(direccionCliente == null) {
+                Console.Write("\n (!) Ingrese una dirección válida: ");
+                direccionCliente = Console.ReadLine();
+            }
+
+            Console.Write("\n - Número de teléfono del cliente: ");
+            var input = Console.ReadLine();
+            long telefonoCliente;
+
+            while(!long.TryParse(input, out telefonoCliente)) {
+                Console.Write("\n (!) Ingrese un número válido: ");
+                input = Console.ReadLine();
+            }
+
+            nuevoPedido.Numero = numeroPedido;
+            nuevoPedido.Observaciones = observacion;
+            
+            Cliente nuevoCliente = new Cliente();       // Nueva intancia para cliente
+
+            nuevoCliente.Nombre = nombreCliente;
+            nuevoCliente.Direccion = direccionCliente;
+            nuevoCliente.Telefono = telefonoCliente;
+
+            nuevoPedido.Cliente = nuevoCliente;
+
+            this.listadoTotalPedidos.Add(nuevoPedido);
+
+            Console.WriteLine("\n\n >> El pedido ha sido creado exitosamente. \n");
+        }
+
+        public void AsignarPedido() {
+
+            Console.WriteLine("\n - ASIGNACIÓN DE PEDIDOS - ");
+            
+            if(this.ListadoTotalPedidos.Count() > 0) {     // Si existen pedidos enlistados, se procede con lo siguiente
+
+                // Se muestran todos los pedidos registrados. Se habilita la selección de un pedido para asignar a un cadete
+
+                Console.WriteLine("\n - LISTADO DE TODOS LOS PEDIDOS REGISTRADOS: ");
+
+                this.ListarTodosLosPedidos();
+
+                Console.WriteLine("\n\n - ELECCIÓN DEL PEDIDO: ");
+
+                Pedido pedidoSeleccionado = this.SeleccionarPedidoPorNumero();
+
+                Console.Clear();
+
+                Console.WriteLine("\n\n >> Pedido seleccionado para asignar: ");
+                pedidoSeleccionado.VerDatosPedido();
+
+                Console.ReadLine();
+                Console.Clear();
+
+                // Se muestran los cadetes. Se habilita la selección de un cadete para asignar el pedido
+
+                Console.WriteLine("\n\n - LISTADO DE TODOS LOS CADETES: ");
+                this.ListarTodosLosCadetes();
+
+                Console.WriteLine("\n\n - ELECCIÓN DEL CADETE: ");
+
+                Cadete cadeteSeleccionado = this.SeleccionarCadetePorID();
+
+                Console.Clear();
+
+                // Una vez seleccionado el pedido y el cadete, se procede con la asignación
+
+                pedidoSeleccionado.Asignado = true;
+                cadeteSeleccionado.ListadoPedidos.Add(pedidoSeleccionado);      // Se añade el pedido elegido a la lista de pedidos del cadete elegido
+
+                Console.WriteLine("\n >> Asignación completada: ");
+                cadeteSeleccionado.VerDatosCadete();
+
+            }
+            else {
+                Console.WriteLine("\n (!) No hay pedidos registrados para ser asignados");
+            }
+
+        }
+
+        public void ListarTodosLosPedidos() {
+            foreach(Pedido P in this.ListadoTotalPedidos) {
+                P.VerDatosPedido();
+            }
+        }
+
+        public void ListarTodosLosCadetes() {
+            foreach(Cadete C in this.ListadoCadetes) {
+                C.VerDatosCadete();
+            }
+        }
+
+        public void CambiarEstadoPedido() {
+
+            Console.WriteLine("\n - MODIFICACIÓN DEL ESTADO DE PEDIDOS - ");
+
+            if(this.ListadoTotalPedidos.Count() > 0) {
+
+                Console.WriteLine("\n\n - LISTADO DE TODOS LOS PEDIDOS REGISTRADOS: ");
+                this.ListarTodosLosPedidos();
+
+                Console.WriteLine("\n - ELECCIÓN DEL PEDIDO A MODIFICAR:  ");
+
+                Pedido pedidoAModificar = this.SeleccionarPedidoPorNumero();
+
+                Console.Write("\n ¿Cuál es el nuevo estado del pedido? \n [1] - Pendiente  \n [2] - En preparación \n [3] - Asignado a un cadete \n [4] - En camino \n [5] - Entregado \n [6] - Cancelado \n\n > Su respuesta: ");
+
+                string? input = Console.ReadLine();
+                int option;
+
+                while(!int.TryParse(input, out option) || option < 1 || option > 6) {
+                    Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
+                    input = Console.ReadLine();
+                }
+
+                switch(option) {
+
+                    case 1:
+                        pedidoAModificar.Estado = EstadoPedido.Pendiente;
+                    break;
+
+                    case 2:
+                        pedidoAModificar.Estado = EstadoPedido.EnPreparacion;
+                    break;
+
+                    case 3:
+                        pedidoAModificar.Estado = EstadoPedido.AsignadoACadete;
+                    break;
+
+                    case 4:
+                        pedidoAModificar.Estado = EstadoPedido.EnCamino;
+                    break;
+                    
+                    case 5:
+                        pedidoAModificar.Estado = EstadoPedido.Entregado;
+                    break;
+
+                    case 6:
+                        pedidoAModificar.Estado = EstadoPedido.Cancelado;
+                    break;
+
+                }
+
+                Console.Clear();
+                Console.WriteLine("\n >> El estado del pedido se ha modificado exitosamente");
+
+                pedidoAModificar.VerDatosPedido();
+
+            }  
+            else {
+                Console.WriteLine("\n (!) No hay pedidos registrados para ser asignados");
+            }
+
+        }
+
+        public Pedido SeleccionarPedidoPorNumero() {
+
+            string? input;
+            int numeroPedidoBuscado;
+
+            Console.Write("\n > Ingrese el número del pedido que desea seleccionar: ");
+
+            input = Console.ReadLine();
+
+            while(!int.TryParse(input, out numeroPedidoBuscado)) {
+                Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
+                input = Console.ReadLine();
+            }
+
+            Pedido? pedidoSeleccionado = this.ListadoTotalPedidos.Find(pedido => pedido.Numero == numeroPedidoBuscado);
+
+            while(pedidoSeleccionado == null) {
+
+                Console.Write($"\n\n (!) No se ha encontrado el pedido número {numeroPedidoBuscado}.\n > Ingrese un nuevo valor: ");
+                
+                input = Console.ReadLine();
+
+                while(!int.TryParse(input, out numeroPedidoBuscado)) {
+                    Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
+                    input = Console.ReadLine();
+                }
+
+                pedidoSeleccionado = this.ListadoTotalPedidos.Find(pedido => pedido.Numero == numeroPedidoBuscado);
+            }
+
+            return pedidoSeleccionado;
+
+        }
+
+        public Cadete SeleccionarCadetePorID() {
+
+            int idCadeteBuscado;
+
+            Console.Write("\n > Ingrese el ID del cadete que desea seleccionar: ");
+
+            string? input = Console.ReadLine();
+
+            while(!int.TryParse(input, out idCadeteBuscado)) {
+                Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
+                input = Console.ReadLine();
+            }
+
+            Cadete? cadeteSeleccionado = this.ListadoCadetes.Find(cadete => cadete.IdCadete == idCadeteBuscado);
+
+            while(cadeteSeleccionado == null) {
+
+                Console.Write($"\n\n (!) No se ha encontrado el cadete con ID {idCadeteBuscado}.\n > Ingrese un nuevo valor: ");
+                
+                input = Console.ReadLine();
+
+                while(!int.TryParse(input, out idCadeteBuscado)) {
+                    Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
+                    input = Console.ReadLine();
+                }
+
+                cadeteSeleccionado = this.ListadoCadetes.Find(cadete => cadete.IdCadete == idCadeteBuscado);
+
+            }
+
+            return cadeteSeleccionado;
+        }
+
+        public void ReasignarPedido() {
+
+            Console.WriteLine("\n - REASIGNACIÓN DE PEDIDO - ");
+
+            if(this.ListadoTotalPedidos.Count() > 0) {
+
+                Console.WriteLine("\n - ELECCIÓN DEL PEDIDO A REASIGNAR:  ");        // Se muestran los pedidos que no tienen un cadete asignado
+
+                foreach(Pedido P in this.ListadoTotalPedidos) {
+                    if(P.Asignado == true) {
+                        P.VerDatosPedido();
+                    }
+                }
+
+                Pedido pedidoAReasignar = this.SeleccionarPedidoAsignado();     // Se elige el pedido a reasignar de una lista de pedidos con asignacion de cadete afirmativa
+
+                Console.Clear();
+
+                foreach(Cadete C in this.ListadoCadetes) {
+
+                    Pedido? pedidoAEliminar = C.ListadoPedidos.Find(pedido => pedido == pedidoAReasignar);
+
+                    if(pedidoAEliminar != null) {       // Si el pedido a reasignar se encuentra en alguna de las listas de pedidos de algun cadete, se elimina
+                        C.ListadoPedidos.Remove(pedidoAEliminar);
+                    }
+
+                }
+
+                Console.WriteLine("\n - ELECCIÓN DEL CADETE AL QUE DESEA REASIGNAR EL PEDIDO: ");
+
+                this.ListarTodosLosCadetes();
+
+                Cadete cadeteSeleccionado = this.SeleccionarCadetePorID();
+
+                cadeteSeleccionado.ListadoPedidos.Add(pedidoAReasignar);
+
+                Console.Clear();
+
+                Console.WriteLine("\n >> Pedido reasignado exitosamente");
+
+                cadeteSeleccionado.VerDatosCadete();
+
+            }
+            else {
+                Console.WriteLine("\n (!) No hay pedidos registrados para ser reasignados");
+            }
+            
+        }
+
+        public Pedido SeleccionarPedidoAsignado() {
+
+            string? input;
+            int numeroPedidoBuscado;
+
+            Console.Write("\n > Ingrese el número del pedido que desea seleccionar: ");
+
+            input = Console.ReadLine();
+
+            while(!int.TryParse(input, out numeroPedidoBuscado)) {
+                Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
+                input = Console.ReadLine();
+            }
+
+            Pedido? pedidoSeleccionado = this.ListadoTotalPedidos.Find(pedido => pedido.Numero == numeroPedidoBuscado && pedido.Asignado == true);
+
+            while(pedidoSeleccionado == null) {
+
+                Console.Write($"\n\n (!) No se ha encontrado el pedido número {numeroPedidoBuscado}.\n > Ingrese un nuevo valor: ");
+                
+                input = Console.ReadLine();
+
+                while(!int.TryParse(input, out numeroPedidoBuscado)) {
+                    Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
+                    input = Console.ReadLine();
+                }
+
+                pedidoSeleccionado = this.ListadoTotalPedidos.Find(pedido => pedido.Numero == numeroPedidoBuscado);
+            }
+
+            return pedidoSeleccionado;
+
+        }
+
+        public int CantidadDeCadetes() {
+            return this.ListadoCadetes.Count();
+        }
+
+        public int CantidadDePedidos() {
+            return this.ListadoTotalPedidos.Count();
+        }
+
+    }
+    
+}
+
