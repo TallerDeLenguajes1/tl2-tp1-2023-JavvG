@@ -8,43 +8,27 @@ using System.IO;
 
 namespace EspacioAccesoADatos;
 
-public class AccesoADatos{
-    private string dataPath = Directory.GetCurrentDirectory() + "/";
-    private List<Cadete> listaCadetes;
-    private Cadeteria cadeteria;
+public abstract class AccesoADatos{
 
-    public string DataPath { get => dataPath; set => dataPath = value; }
-    public List<Cadete> ListaCadetes { get => listaCadetes; set => listaCadetes = value; }
-    public Cadeteria Cadeteria { get => cadeteria; set => cadeteria = value; }
-
-    public AccesoADatos() {
-        this.ListaCadetes = new List<Cadete>();
-        this.Cadeteria  = new Cadeteria();
+    public virtual Cadeteria LeerDatosCadeteria(string filename){
+        return null;
     }
 
-    public virtual void LeerDatosCadeteria(){
-        // Empty
-    }
-
-    public virtual void LeerDatosCadetes() {
-        // Empty
+    public virtual List<Cadete> LeerDatosCadetes(string filename) {
+        return null;
     }
 
 }
 
 public class AccesoCSV : AccesoADatos {     // La subclase hereda los atributos y métodos de la clase base AccesoADatos
 
-    public AccesoCSV() : base() {     // Definición del constructor de la clase derivada, se indica que es el mismo que el de la clase base (!)
-        //Empty
-    }
+    public override Cadeteria LeerDatosCadeteria(string filename) {
 
-    public override void LeerDatosCadeteria() {
+        if(File.Exists(filename)) {     // Si el archivo existe, ejecutar lo siguiente
 
-        this.DataPath = DataPath + "cadeteria.csv";
+            List<Cadeteria> listaCadeteria = new();
 
-        if(File.Exists(DataPath)) {     // Si el archivo existe, ejecutar lo siguiente
-
-            using (var reader = new StreamReader(DataPath)) {
+            using (var reader = new StreamReader(filename)) {
 
                 while(!reader.EndOfStream) {        // Mientras no acabe la lectura del archivo
 
@@ -54,28 +38,33 @@ public class AccesoCSV : AccesoADatos {     // La subclase hereda los atributos 
 
                         var splits = line.Split(',');       // Separa las línea leída en el caracter ','
 
-                        Cadeteria.Nombre = splits[0].Trim();        // El primer split corresponde al nombre (Trim() remueve los espacios en blanco)
-                        Cadeteria.Telefono = int.Parse(splits[1].Trim());       // El segundo split corresponde al teléfono, haciendo la conversión a entero
+                        Cadeteria cadeteria = new();
 
+                        cadeteria.Nombre = splits[0].Trim();        // El primer split corresponde al nombre (Trim() remueve los espacios en blanco)
+                        cadeteria.Telefono = int.Parse(splits[1].Trim());       // El segundo split corresponde al teléfono, haciendo la conversión a entero
+
+                        listaCadeteria.Add(cadeteria);
 
                     }
                 }
             }
 
             Console.WriteLine("\n Datos de la cadeteria leídos correctamente");
+            return listaCadeteria[0];
         }
         else {
             Console.WriteLine("\n\n (!) No ha podido encontrarse el archivo de datos (cadeteria.csv)");
+            return null;
         }
     }
 
-    public override void LeerDatosCadetes() {
-        
-        this.DataPath = DataPath + "cadetes.csv";
+    public override List<Cadete> LeerDatosCadetes(string filename) {
 
-        if(File.Exists(DataPath)) {
+        if(File.Exists(filename)) {
 
-            using (var reader = new StreamReader(DataPath)) {
+            List<Cadete> listaCadetes = new();
+
+            using (var reader = new StreamReader(filename)) {
 
                 while(!reader.EndOfStream) {
 
@@ -92,7 +81,7 @@ public class AccesoCSV : AccesoADatos {     // La subclase hereda los atributos 
                         cadete.Direccion = splits[2].Trim();
                         cadete.Telefono = long.Parse(splits[3].Trim());
 
-                       ListaCadetes.Add(cadete);        // Se añade el nuevo cadete registrado a la lista
+                       listaCadetes.Add(cadete);        // Se añade el nuevo cadete registrado a la lista
 
                     }
 
@@ -102,9 +91,12 @@ public class AccesoCSV : AccesoADatos {     // La subclase hereda los atributos 
 
             Console.WriteLine("\n Datos de los cadetes leídos correctamente");
 
+            return listaCadetes;
+
         }
         else {
             Console.WriteLine("\n\n (!) No ha podido encontrarse el archivo de datos (cadetes.csv)");
+            return null;
         }
 
     }
@@ -113,48 +105,45 @@ public class AccesoCSV : AccesoADatos {     // La subclase hereda los atributos 
 
 public class AccesoJSON : AccesoADatos {
 
-    public AccesoJSON() : base() {       // Constructor (!)
-        // Empty
-    }
-
-    public override void LeerDatosCadeteria() {
-
-        this.DataPath = DataPath + "cadeteria.json";
+    public override Cadeteria LeerDatosCadeteria(string filename) {
         
-        if(File.Exists(DataPath)) {
+        if(File.Exists(filename)) {
 
-            string JSON = File.ReadAllText(DataPath);
+            List<Cadeteria> listaCadeteria = new();
 
-            string[]? array = JsonSerializer.Deserialize<string[]>(JSON);       // Se añaden los datos leídos del archivo JSON a un arreglo
+            string JSON = File.ReadAllText(filename);
 
-            Cadeteria.Nombre = array[0];
-            Cadeteria.Telefono = int.Parse(array[1]);
+            listaCadeteria = JsonSerializer.Deserialize<List<Cadeteria>>(JSON);       // Se añaden los datos leídos del archivo JSON a un arreglo
+
+            Console.WriteLine("\n Datos de la cadetería leídos correctamente");
+
+            return listaCadeteria[0];
+
         }
         else {
             Console.WriteLine("\n\n (!) No ha podido encontrarse el archivo de datos (cadeteria.json)");
+            return null;
         }
         
     }
 
-    public override void LeerDatosCadetes() {
-        
-        this.DataPath = DataPath + "cadetes.json";
+    public override List<Cadete> LeerDatosCadetes(string filename) {
 
-        if(File.Exists(DataPath)) {
+        if(File.Exists(filename)) {
 
-            string JSON = File.ReadAllText(DataPath);
+            List<Cadete> listaCadetes = new();
 
-            string[]? array = JsonSerializer.Deserialize<string[]>(JSON);
+            string JSON = File.ReadAllText(filename);
 
-            Cadete cadete = new Cadete();
+            listaCadetes = JsonSerializer.Deserialize<List<Cadete>>(JSON);
 
-            cadete.IdCadete = int.Parse(array[0]);
-            cadete.Nombre = array[1];
-            cadete.Direccion = array[2];
-            cadete.Telefono = int.Parse(array[3]); 
+            Console.WriteLine("\n Datos de los cadetes leídos correctamente");
+
+            return listaCadetes;
         }
         else {
             Console.WriteLine("\n\n (!) No ha podido encontrarse el archivo de datos (cadetes.json)");
+            return null;
         }
 
     }

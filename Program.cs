@@ -84,20 +84,24 @@ while(again && option != 7) {
         
     }
 
-    Console.ReadLine();
-    Console.Clear();
+    if(option != 7) {
 
-    Console.Write("\n ¿Desea realizar otra operación? \n\n [1] - Si \n [2] - No \n\n >> Su respuesta: ");
-    input = Console.ReadLine();
+        Console.ReadLine();
+        Console.Clear();
 
-    int aux = 0;
-
-    while(!int.TryParse(input, out aux) || aux < 1 || aux > 2) {
-        Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
+        Console.Write("\n ¿Desea realizar otra operación? \n\n [1] - Si \n [2] - No \n\n >> Su respuesta: ");
         input = Console.ReadLine();
-    }
 
-    again = true ? aux == 1 : false;
+        int aux = 0;
+
+        while(!int.TryParse(input, out aux) || aux < 1 || aux > 2) {
+            Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
+            input = Console.ReadLine();
+        }
+
+        again = true ? aux == 1 : false;
+
+    }
 
 }
 

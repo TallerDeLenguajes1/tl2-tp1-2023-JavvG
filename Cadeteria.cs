@@ -34,6 +34,11 @@ namespace EspacioCadeteria {
             this.ListaPedidosCancelados = new List<Pedido>();
         }
 
+        /* public Cadeteria(string nombre, int telefono) {
+            this.Nombre = nombre;
+            this.Telefono = telefono;
+        } */
+
         public void CargarDatos(int option) {
 
             switch(option) {
@@ -42,24 +47,25 @@ namespace EspacioCadeteria {
                     
                     AccesoCSV csv = new AccesoCSV();
 
-                    csv.LeerDatosCadeteria();
-                    csv.LeerDatosCadetes();
+                    Cadeteria aux = csv.LeerDatosCadeteria("cadeteria.csv");
 
-                    this.ListadoCadetes = csv.ListaCadetes;
-                    this.Nombre = csv.Cadeteria.Nombre;
-                    this.Telefono = csv.Cadeteria.Telefono;
+                    Nombre = aux.Nombre;
+                    Telefono = aux.Telefono;
+                
+                    listadoCadetes = csv.LeerDatosCadetes("cadetes.csv");
 
                 break;
 
                 case 2:
 
                     AccesoJSON json = new AccesoJSON();
-                    json.LeerDatosCadeteria();
-                    json.LeerDatosCadetes();
 
-                    this.listadoCadetes = json.ListaCadetes;
-                    this.Nombre = json.Cadeteria.Nombre;
-                    this.Telefono = json.Cadeteria.Telefono;
+                    aux = json.LeerDatosCadeteria("cadeteria.json");
+
+                    Nombre = aux.Nombre;
+                    Telefono = aux.Telefono;
+
+                    ListadoCadetes = json.LeerDatosCadetes("cadetes.json");
 
                 break;
 
@@ -210,7 +216,7 @@ namespace EspacioCadeteria {
 
                 Console.Write("\n ¿Cuál es el nuevo estado del pedido? \n [1] - Pendiente  \n [2] - En preparación \n [3] - Asignado a un cadete \n [4] - En camino \n [5] - Entregado \n [6] - Cancelado \n\n > Su respuesta: ");
 
-                string? input = Console.ReadLine();
+                string input = Console.ReadLine();
                 int option;
 
                 while(!int.TryParse(input, out option) || option < 1 || option > 6) {
@@ -268,7 +274,7 @@ namespace EspacioCadeteria {
 
         public Pedido SeleccionarPedidoPorNumero() {
 
-            string? input;
+            string input;
             int numeroPedidoBuscado;
 
             Console.Write("\n > Ingrese el número del pedido que desea seleccionar: ");
@@ -280,7 +286,7 @@ namespace EspacioCadeteria {
                 input = Console.ReadLine();
             }
 
-            Pedido? pedidoSeleccionado = this.ListadoTotalPedidos.Find(pedido => pedido.Numero == numeroPedidoBuscado);
+            Pedido pedidoSeleccionado = this.ListadoTotalPedidos.Find(pedido => pedido.Numero == numeroPedidoBuscado);
 
             while(pedidoSeleccionado == null) {
 
@@ -306,14 +312,14 @@ namespace EspacioCadeteria {
 
             Console.Write("\n > Ingrese el ID del cadete que desea seleccionar: ");
 
-            string? input = Console.ReadLine();
+            string input = Console.ReadLine();
 
             while(!int.TryParse(input, out idCadeteBuscado)) {
                 Console.Write("\n\n (!) Ha ingresado una opción inválida.\n > Ingrese nuevamente: ");
                 input = Console.ReadLine();
             }
 
-            Cadete? cadeteSeleccionado = this.ListadoCadetes.Find(cadete => cadete.IdCadete == idCadeteBuscado);
+            Cadete cadeteSeleccionado = this.ListadoCadetes.Find(cadete => cadete.IdCadete == idCadeteBuscado);
 
             while(cadeteSeleccionado == null) {
 
@@ -353,7 +359,7 @@ namespace EspacioCadeteria {
 
                 foreach(Cadete C in this.ListadoCadetes) {
 
-                    Pedido? pedidoAEliminar = C.ListadoPedidos.Find(pedido => pedido == pedidoAReasignar);
+                    Pedido pedidoAEliminar = C.ListadoPedidos.Find(pedido => pedido == pedidoAReasignar);
 
                     if(pedidoAEliminar != null) {       // Si el pedido a reasignar se encuentra en alguna de las listas de pedidos de algun cadete, se elimina
                         C.EliminarPedido(pedidoAEliminar);
@@ -384,7 +390,7 @@ namespace EspacioCadeteria {
 
         public Pedido SeleccionarPedidoAsignado() {
 
-            string? input;
+            string input;
             int numeroPedidoBuscado;
 
             Console.Write("\n > Ingrese el número del pedido que desea seleccionar: ");
@@ -396,7 +402,7 @@ namespace EspacioCadeteria {
                 input = Console.ReadLine();
             }
 
-            Pedido? pedidoSeleccionado = this.ListadoTotalPedidos.Find(pedido => pedido.Numero == numeroPedidoBuscado && pedido.Asignado == true);
+            Pedido pedidoSeleccionado = this.ListadoTotalPedidos.Find(pedido => pedido.Numero == numeroPedidoBuscado && pedido.Asignado == true);
 
             while(pedidoSeleccionado == null) {
 
@@ -446,11 +452,13 @@ namespace EspacioCadeteria {
 
         public void GenerarInforme() {
 
-            var pedidosEntregados = from pedido in this.ListadoTotalPedidos where pedido.Estado == EstadoPedido.Entregado select pedido;
+            //var pedidosEntregados = from pedido in this.ListadoTotalPedidos where pedido.Estado == EstadoPedido.Entregado select pedido;    // Sentencia linq (old)
+
+            var pedidosEntregados1 = listadoTotalPedidos.Where(L => L.Estado == EstadoPedido.Entregado); //New
 
             Console.WriteLine("\n------ INFORME ------\n\n");
             Console.WriteLine($" Pedidos pendientes: {this.ListaPedidosPendientes.Count()} ");
-            Console.WriteLine($" Pedidos entregados: {this.ListaPedidosEntregados.Count()}"); 
+            Console.WriteLine($" Pedidos entregados: {pedidosEntregados1.Count()}"); 
             Console.WriteLine($" Pedidos totales: {this.ListadoTotalPedidos.Count()}");
             Console.WriteLine($" ------------------\n Recaudación total: ${this.RecaudacionTotal()}");
 
