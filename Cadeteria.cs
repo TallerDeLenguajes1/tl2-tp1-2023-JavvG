@@ -1,6 +1,7 @@
 using EspacioCadete;
 using EspacioPedido;
 using EspacioCliente;
+using EspacioAccesoADatos;
 
 namespace EspacioCadeteria {
 
@@ -33,75 +34,35 @@ namespace EspacioCadeteria {
             this.ListaPedidosCancelados = new List<Pedido>();
         }
 
-        public void CargarDatosCadeteria() {
+        public void CargarDatos(int option) {
 
-            string currentDirecory = Directory.GetCurrentDirectory();       // Obtiene el directorio actual
-            string dataPath = currentDirecory + @"\cadeteria.csv";      // Dirección en la que se encuentra el archivo buscado
+            switch(option) {
 
-            if(File.Exists(dataPath)) {     // Si el archivo existe, ejecutar lo siguiente
+                case 1:
+                    
+                    AccesoCSV csv = new AccesoCSV();
 
-                using (var reader = new StreamReader(dataPath)) {
+                    csv.LeerDatosCadeteria();
+                    csv.LeerDatosCadetes();
 
-                    while(!reader.EndOfStream) {        // Mientras no acabe la lectura del archivo
+                    this.ListadoCadetes = csv.ListaCadetes;
+                    this.Nombre = csv.Cadeteria.Nombre;
+                    this.Telefono = csv.Cadeteria.Telefono;
 
-                        string? line = reader.ReadLine();       // Se lee una línea de archivo
+                break;
 
-                        if(line != null) {      // Si la línea leída no está vacía, ejecutar lo siguiente
+                case 2:
 
-                            var splits = line.Split(',');       // Separa las línea leída en el caracter ','
+                    AccesoJSON json = new AccesoJSON();
+                    json.LeerDatosCadeteria();
+                    json.LeerDatosCadetes();
 
-                            this.Nombre = splits[0].Trim();        // El primer split corresponde al nombre (Trim() remueve los espacios en blanco)
-                            this.Telefono = int.Parse(splits[1].Trim());       // El segundo split corresponde al teléfono, haciendo la conversión a entero
+                    this.listadoCadetes = json.ListaCadetes;
+                    this.Nombre = json.Cadeteria.Nombre;
+                    this.Telefono = json.Cadeteria.Telefono;
 
-                        }
-                    }
-                }
+                break;
 
-                //Console.WriteLine("\n Datos de cadetería leídos correctamente");
-            }
-            else {
-                Console.WriteLine("\n\n (!) No ha podido encontrarse el archivo de datos de cadetería (cadeteria.csv)");
-            }
-
-        }
-
-        public void CargarDatosCadetes() {
-
-            string currentDirectory = Directory.GetCurrentDirectory();
-            string dataPath = currentDirectory + @"\cadetes.csv";
-
-            if(File.Exists(dataPath)) {
-
-                using (var reader = new StreamReader(dataPath)) {
-
-                    while(!reader.EndOfStream) {
-
-                        string? line = reader.ReadLine();
-
-                        if(line != null) {
-
-                            var splits = line.Split(',');
-
-                            Cadete cadete = new Cadete();       // Nueva instancia para crear un cadete
-
-                            cadete.IdCadete = int.Parse(splits[0].Trim());
-                            cadete.Nombre = splits[1].Trim();
-                            cadete.Direccion = splits[2].Trim();
-                            cadete.Telefono = long.Parse(splits[3].Trim());
-
-                            this.ListadoCadetes.Add(cadete);        // Se añade el nuevo cadete registrado a la lista
-
-                        }
-
-                    }
-
-                }
-
-                //Console.WriteLine("\n Datos de los cadetes leídos correctamente");
-
-            }
-            else {
-                Console.WriteLine("\n\n (!) No ha podido encontrarse el archivo de datos de cadetes (cadetes.csv)");
             }
 
         }
