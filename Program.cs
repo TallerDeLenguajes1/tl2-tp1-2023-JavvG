@@ -10,6 +10,8 @@ Cadeteria cadeteria = new Cadeteria();      // Nueva instancia de Cadeteria
 
 string input;
 
+Console.Clear();
+
 Console.Write("\n\n > Seleccione desde qué tipo de archivo desea cargar los datos: \n\n [1] - Archivo CSV \n [2] - Archivo JSON \n\n > Su respuesta: ");
 
 input = Console.ReadLine();
