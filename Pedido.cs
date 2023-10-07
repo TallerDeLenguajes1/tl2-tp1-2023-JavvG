@@ -18,7 +18,6 @@ namespace EspacioPedido {
         private Cliente cliente;
         private EstadoPedido estado;
         private double monto;
-
         private bool asignado;
 
         public int Numero { get => numero; set => numero = value; }
@@ -31,6 +30,15 @@ namespace EspacioPedido {
         public Pedido() {       // Cada vez que se crea un pedido, se crea en estado "Pendiente"
             this.Estado = EstadoPedido.Pendiente;
             this.Asignado = false;
+        }
+
+        public Pedido(int numero, string observaciones, Cliente cliente, EstadoPedido estado, bool asignado, double monto) {
+            this.Numero = numero;
+            this.Observaciones = observaciones;
+            this.Cliente = cliente;
+            this.Estado = estado;
+            this.Asignado = asignado;
+            this.Monto = monto;
         }
 
         public void VerDatosCliente() {

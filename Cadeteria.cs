@@ -11,35 +11,23 @@ namespace EspacioCadeteria {
         private int telefono;
         private List<Cadete> listadoCadetes;
         private List<Pedido> listadoTotalPedidos;
-        private List<Pedido> listaPedidosPendientes;
-        private List<Pedido> listaPedidosEntregados;
-        private List<Pedido> listaPedidosCancelados;
 
 
         public string Nombre { get => nombre; set => nombre = value; }
         public int Telefono { get => telefono; set => telefono = value; }
         public List<Cadete> ListadoCadetes { get => listadoCadetes; set => listadoCadetes = value; }
         public List<Pedido> ListadoTotalPedidos { get => listadoTotalPedidos; set => listadoTotalPedidos = value; }
-        public List<Pedido> ListaPedidosPendientes { get => listaPedidosPendientes; set => listaPedidosPendientes = value; }
-        public List<Pedido> ListaPedidosEntregados { get => listaPedidosEntregados; set => listaPedidosEntregados = value; }
-        public List<Pedido> ListaPedidosCancelados { get => listaPedidosCancelados; set => listaPedidosCancelados = value; }
 
         // Métodos
 
         public Cadeteria() {    // Constructor por defecto, inicializa una lista de cadetes para evitar errores a posteriori
             this.ListadoCadetes = new List<Cadete>();
             this.ListadoTotalPedidos = new List<Pedido>();
-            this.ListaPedidosEntregados = new List<Pedido>();
-            this.ListaPedidosPendientes = new List<Pedido>();
-            this.ListaPedidosCancelados = new List<Pedido>();
         }
 
-        /* public Cadeteria(string nombre, int telefono) {
-            this.Nombre = nombre;
-            this.Telefono = telefono;
-        } */
+        public Cadeteria CargarDatos(int option) {
 
-        public void CargarDatos(int option) {
+            Cadeteria cadeteria = null;
 
             switch(option) {
 
@@ -47,12 +35,9 @@ namespace EspacioCadeteria {
                     
                     AccesoCSV csv = new AccesoCSV();
 
-                    Cadeteria aux = csv.LeerDatosCadeteria("cadeteria.csv");
-
-                    Nombre = aux.Nombre;
-                    Telefono = aux.Telefono;
+                    cadeteria = csv.LeerDatosCadeteria("cadeteria.csv");
                 
-                    listadoCadetes = csv.LeerDatosCadetes("cadetes.csv");
+                    cadeteria.ListadoCadetes = csv.LeerDatosCadetes("cadetes.csv");
 
                 break;
 
@@ -60,51 +45,48 @@ namespace EspacioCadeteria {
 
                     AccesoJSON json = new AccesoJSON();
 
-                    aux = json.LeerDatosCadeteria("cadeteria.json");
+                    cadeteria = json.LeerDatosCadeteria("cadeteria.json");
 
-                    Nombre = aux.Nombre;
-                    Telefono = aux.Telefono;
-
-                    ListadoCadetes = json.LeerDatosCadetes("cadetes.json");
+                    cadeteria.ListadoCadetes = json.LeerDatosCadetes("cadetes.json");
 
                 break;
 
             }
 
+            return cadeteria;
+
         }
 
-        public void CrearPedido(int numeroPedido) {
-
-            Pedido nuevoPedido = new Pedido();      // Nueva instancia para el pedido
+        public string CrearPedido(int numeroPedido) {
 
             Console.WriteLine("\n - NUEVO PEDIDO -");
 
             Console.Write("\n - Descripción del pedido: ");
-            var observacion = Console.ReadLine();
+            string observacion = Console.ReadLine();
 
-            while(string.IsNullOrEmpty(observacion)) {
+            while(string.IsNullOrEmpty(observacion.Trim())) {
                 Console.Write("\n - (!) Ingrese una descripción válida: ");
                 observacion = Console.ReadLine();
             }
 
             Console.Write("\n - Nombre del cliente: ");
-            var nombreCliente = Console.ReadLine();
+            string nombreCliente = Console.ReadLine();
 
-            while(string.IsNullOrEmpty(nombreCliente)) {
+            while(string.IsNullOrEmpty(nombreCliente.Trim())) {
                 Console.Write("\n (!) Ingrese un nombre válido: ");
                 nombreCliente = Console.ReadLine();
             }
 
             Console.Write("\n - Dirección del cliente: ");
-            var direccionCliente = Console.ReadLine();
+            string direccionCliente = Console.ReadLine();
 
-            while(direccionCliente == null) {
+            while(string.IsNullOrEmpty(direccionCliente.Trim())) {
                 Console.Write("\n (!) Ingrese una dirección válida: ");
                 direccionCliente = Console.ReadLine();
             }
 
             Console.Write("\n - Número de teléfono del cliente: ");
-            var input = Console.ReadLine();
+            string input = Console.ReadLine();
             long telefonoCliente;
 
             while(!long.TryParse(input, out telefonoCliente)) {
@@ -120,26 +102,19 @@ namespace EspacioCadeteria {
                 Console.Write("\n (!) Ingrese un valor válido: ");
                 input = Console.ReadLine();
             }
-
-            nuevoPedido.Numero = numeroPedido;
-            nuevoPedido.Observaciones = observacion;
-            nuevoPedido.Monto = montoPedido;
             
-            Cliente nuevoCliente = new Cliente();       // Nueva intancia para cliente
+            Cliente nuevoCliente = new Cliente(nombreCliente, direccionCliente, telefonoCliente);       // Nueva intancia para cliente
 
-            nuevoCliente.Nombre = nombreCliente;
-            nuevoCliente.Direccion = direccionCliente;
-            nuevoCliente.Telefono = telefonoCliente;
-
-            nuevoPedido.Cliente = nuevoCliente;
+            Pedido nuevoPedido = new Pedido(numeroPedido, observacion, nuevoCliente, EstadoPedido.Pendiente, false, montoPedido);      // Nueva instancia para el pedido
 
             this.listadoTotalPedidos.Add(nuevoPedido);
-            this.ListaPedidosPendientes.Add(nuevoPedido);
 
-            Console.WriteLine("\n\n >> El pedido ha sido creado exitosamente. \n");
+            nuevoPedido.VerDatosPedido();
+
+            return("\n\n >> El pedido ha sido creado exitosamente. \n");
         }
 
-        public void AsignarPedido() {
+        public string AsignarPedido() {
 
             Console.WriteLine("\n - ASIGNACIÓN DE PEDIDOS - ");
             
@@ -149,7 +124,9 @@ namespace EspacioCadeteria {
 
                 Console.WriteLine("\n - LISTADO DE TODOS LOS PEDIDOS REGISTRADOS: ");
 
-                this.ListarTodosLosPedidos();
+                foreach(Pedido P in this.ListadoTotalPedidos) {
+                    P.VerDatosPedido();
+                }
 
                 Console.WriteLine("\n\n - ELECCIÓN DEL PEDIDO: ");
 
@@ -166,7 +143,9 @@ namespace EspacioCadeteria {
                 // Se muestran los cadetes. Se habilita la selección de un cadete para asignar el pedido
 
                 Console.WriteLine("\n\n - LISTADO DE TODOS LOS CADETES: ");
-                this.ListarTodosLosCadetes();
+                foreach(Cadete C in this.ListadoCadetes) {
+                    C.VerDatosCadete();
+                }
 
                 Console.WriteLine("\n\n - ELECCIÓN DEL CADETE: ");
 
@@ -179,40 +158,33 @@ namespace EspacioCadeteria {
                 pedidoSeleccionado.Asignado = true;
                 cadeteSeleccionado.ListadoPedidos.Add(pedidoSeleccionado);      // Se añade el pedido elegido a la lista de pedidos del cadete elegido
 
-                Console.WriteLine("\n >> Asignación completada: ");
                 cadeteSeleccionado.VerDatosCadete();
+
+                return("\n >> Asignación completada.");
 
             }
             else {
-                Console.WriteLine("\n (!) No hay pedidos registrados para ser asignados");
+                return("\n (!) No hay pedidos registrados para ser asignados.");
             }
 
         }
 
-        public void ListarTodosLosPedidos() {
-            foreach(Pedido P in this.ListadoTotalPedidos) {
-                P.VerDatosPedido();
-            }
-        }
-
-        public void ListarTodosLosCadetes() {
-            foreach(Cadete C in this.ListadoCadetes) {
-                C.VerDatosCadete();
-            }
-        }
-
-        public void CambiarEstadoPedido() {
+        public string CambiarEstadoPedido() {
 
             Console.WriteLine("\n - MODIFICACIÓN DEL ESTADO DE PEDIDOS - ");
 
             if(this.ListadoTotalPedidos.Count() > 0) {
 
                 Console.WriteLine("\n\n - LISTADO DE TODOS LOS PEDIDOS REGISTRADOS: ");
-                this.ListarTodosLosPedidos();
+                foreach(Pedido P in this.ListadoTotalPedidos) {
+                    P.VerDatosPedido();
+                }
 
                 Console.WriteLine("\n - ELECCIÓN DEL PEDIDO A MODIFICAR:  ");
 
                 Pedido pedidoAModificar = this.SeleccionarPedidoPorNumero();
+
+                Console.Clear();
 
                 Console.Write("\n ¿Cuál es el nuevo estado del pedido? \n [1] - Pendiente  \n [2] - En preparación \n [3] - Asignado a un cadete \n [4] - En camino \n [5] - Entregado \n [6] - Cancelado \n\n > Su respuesta: ");
 
@@ -224,16 +196,10 @@ namespace EspacioCadeteria {
                     input = Console.ReadLine();
                 }
 
-                this.ListaPedidosEntregados.RemoveAll(pedido => pedido == pedidoAModificar);
-                this.ListaPedidosPendientes.RemoveAll(pedido => pedido == pedidoAModificar);
-                this.ListaPedidosCancelados.RemoveAll(pedido => pedido == pedidoAModificar);
-
-
                 switch(option) {
 
                     case 1:
                         pedidoAModificar.Estado = EstadoPedido.Pendiente;
-                        this.ListaPedidosPendientes.Add(pedidoAModificar);
                     break;
 
                     case 2:
@@ -250,24 +216,23 @@ namespace EspacioCadeteria {
                     
                     case 5:
                         pedidoAModificar.Estado = EstadoPedido.Entregado;
-                        this.ListaPedidosEntregados.Add(pedidoAModificar);
                     break;
 
                     case 6:
                         pedidoAModificar.Estado = EstadoPedido.Cancelado;
-                        this.ListaPedidosCancelados.Add(pedidoAModificar);
                     break;
 
                 }
 
                 Console.Clear();
-                Console.WriteLine("\n >> El estado del pedido se ha modificado exitosamente");
 
                 pedidoAModificar.VerDatosPedido();
 
+                return("\n >> El estado del pedido se ha modificado exitosamente.");
+
             }  
             else {
-                Console.WriteLine("\n (!) No hay pedidos registrados para ser asignados");
+                return("\n (!) No hay pedidos registrados para ser asignados.");
             }
 
         }
@@ -339,7 +304,7 @@ namespace EspacioCadeteria {
             return cadeteSeleccionado;
         }
 
-        public void ReasignarPedido() {
+        public string ReasignarPedido() {
 
             Console.WriteLine("\n - REASIGNACIÓN DE PEDIDO - ");
 
@@ -368,8 +333,9 @@ namespace EspacioCadeteria {
                 }
 
                 Console.WriteLine("\n - ELECCIÓN DEL CADETE AL QUE DESEA REASIGNAR EL PEDIDO: ");
-
-                this.ListarTodosLosCadetes();
+                foreach(Cadete C in this.ListadoCadetes) {
+                    C.VerDatosCadete();
+                }
 
                 Cadete cadeteSeleccionado = this.SeleccionarCadetePorID();
 
@@ -377,13 +343,13 @@ namespace EspacioCadeteria {
 
                 Console.Clear();
 
-                Console.WriteLine("\n >> Pedido reasignado exitosamente");
-
                 cadeteSeleccionado.VerDatosCadete();
+
+                return("\n >> Pedido reasignado exitosamente");
 
             }
             else {
-                Console.WriteLine("\n (!) No hay pedidos registrados para ser reasignados");
+                return("\n (!) No hay pedidos registrados para ser reasignados");
             }
             
         }
@@ -434,34 +400,13 @@ namespace EspacioCadeteria {
 
             double recaudacion = 0;
 
-            foreach(Pedido P in this.ListadoTotalPedidos) {
+            var listadoPedidosNoCancelados = this.ListadoTotalPedidos.Where(pedido => pedido.Estado != EstadoPedido.Cancelado);
+
+            foreach(Pedido P in listadoPedidosNoCancelados) {
                 recaudacion += P.Monto;
             }
 
             return recaudacion;
-        }
-
-        public void VerMontosCadaPedido() {
-            foreach(Pedido P in this.ListadoTotalPedidos) {
-                Console.WriteLine($"\n PEDIDO NÚMERO: {P.Numero}");
-                Console.WriteLine($" - Monto: ${P.Monto}");
-            }
-        }
-
-        
-
-        public void GenerarInforme() {
-
-            //var pedidosEntregados = from pedido in this.ListadoTotalPedidos where pedido.Estado == EstadoPedido.Entregado select pedido;    // Sentencia linq (old)
-
-            var pedidosEntregados1 = listadoTotalPedidos.Where(L => L.Estado == EstadoPedido.Entregado); //New
-
-            Console.WriteLine("\n------ INFORME ------\n\n");
-            Console.WriteLine($" Pedidos pendientes: {this.ListaPedidosPendientes.Count()} ");
-            Console.WriteLine($" Pedidos entregados: {pedidosEntregados1.Count()}"); 
-            Console.WriteLine($" Pedidos totales: {this.ListadoTotalPedidos.Count()}");
-            Console.WriteLine($" ------------------\n Recaudación total: ${this.RecaudacionTotal()}");
-
         }
 
     }

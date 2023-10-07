@@ -4,12 +4,16 @@ namespace EspacioCliente {
         private string nombre;
         private string direccion;
         private long telefono;
-        private string datosReferenciaDireccion;
 
         public string Nombre { get => nombre; set => nombre = value; }
         public string Direccion { get => direccion; set => direccion = value; }
         public long Telefono { get => telefono; set => telefono = value; }
-        public string DatosReferenciaDireccion { get => datosReferenciaDireccion; set => datosReferenciaDireccion = value; }
+
+        public Cliente(string nombre, string direccion, long telefono) {
+            this.Nombre = nombre;
+            this.Direccion = direccion;
+            this.Telefono = telefono;
+        }
 
     }
 
